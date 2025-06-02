@@ -2,7 +2,7 @@
 train, val, test에 파일을 70%, 20%, 10% 나누는 작업을 자동으로 해주는 파이썬 코드입니다.<br>
 파이썬 파일을 바로 실행하시면 됩니다.
 ```bash
-python app.py
+python file_splitter.py
 ```
 코드 내용을 자신의 환경에 맞게 설정 후 실행해주세요.
 
