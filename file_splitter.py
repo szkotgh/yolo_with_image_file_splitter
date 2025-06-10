@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 
 # YOLO Export with image 파일 경로 설정
 ## Zip 폴더 경로(images, labels가 있는 폴더 경로)
@@ -36,44 +37,41 @@ IMAGES_70PERCENT = IMAGES_DIR_LIST[:int(len(IMAGES_DIR_LIST) * 0.7)]
 IMAGES_20PERCENT = IMAGES_DIR_LIST[int(len(IMAGES_DIR_LIST) * 0.7):int(len(IMAGES_DIR_LIST) * 0.9)]
 IMAGES_10PERCENT = IMAGES_DIR_LIST[int(len(IMAGES_DIR_LIST) * 0.9):]
 
-# copy
-if not os.path.exists(COPY_DIR): os.makedirs(COPY_DIR)
-if not os.path.exists(DIR_70PERCENT): os.makedirs(DIR_70PERCENT)
-if not os.path.exists(os.path.join(DIR_70PERCENT, "images")): os.makedirs(os.path.join(DIR_70PERCENT, "images"))
-if not os.path.exists(os.path.join(DIR_70PERCENT, "labels")): os.makedirs(os.path.join(DIR_70PERCENT, "labels"))
-if not os.path.exists(DIR_20PERCENT): os.makedirs(DIR_20PERCENT)
-if not os.path.exists(os.path.join(DIR_20PERCENT, "images")): os.makedirs(os.path.join(DIR_20PERCENT, "images"))
-if not os.path.exists(os.path.join(DIR_20PERCENT, "labels")): os.makedirs(os.path.join(DIR_20PERCENT, "labels"))
-if not os.path.exists(DIR_10PERCENT): os.makedirs(DIR_10PERCENT)
-if not os.path.exists(os.path.join(DIR_10PERCENT, "images")): os.makedirs(os.path.join(DIR_10PERCENT, "images"))
+def make_dirs(path):
+    os.makedirs(os.path.join(path, "images"), exist_ok=True)
+    os.makedirs(os.path.join(path, "labels"), exist_ok=True)
 
-## train copy 70P
+make_dirs(DIR_70PERCENT)
+make_dirs(DIR_20PERCENT)
+make_dirs(DIR_10PERCENT)
+
+def copy_image_and_label(image_list, dest_dir):
+    for image in image_list:
+        image_path = os.path.join(IMAGES_DIR, image)
+        label_name = remove_extention_file_name(image)
+        label_path = None
+        for label in LABELS_DIR_LIST:
+            if remove_extention_file_name(label) == label_name:
+                label_path = os.path.join(LABELS_DIR, label)
+                break
+        shutil.copy(image_path, os.path.join(dest_dir, "images", image))
+        if label_path:
+            shutil.copy(label_path, os.path.join(dest_dir, "labels", os.path.basename(label_path)))
+
 print("Copying 70% . . .")
-for image in IMAGES_70PERCENT:
-    os.system(f"cp {os.path.join(IMAGES_DIR, image)} {os.path.join(DIR_70PERCENT, 'images', image)}")
-    label_name = remove_extention_file_name(image)
-    for label in LABELS_DIR_LIST:
-        if remove_extention_file_name(label) == label_name:
-            os.system(f"cp {os.path.join(LABELS_DIR, label)} {os.path.join(DIR_70PERCENT, 'labels', label)}")
-print("Copyed")
+copy_image_and_label(IMAGES_70PERCENT, DIR_70PERCENT)
+print("Copied")
 
-## val copy 20P
 print("Copying 20% . . .")
-for image in IMAGES_20PERCENT:
-    os.system(f"cp {os.path.join(IMAGES_DIR, image)} {os.path.join(DIR_20PERCENT, 'images', image)}")
-    label_name = remove_extention_file_name(image)
-    for label in LABELS_DIR_LIST:
-        if remove_extention_file_name(label) == label_name:
-            os.system(f"cp {os.path.join(LABELS_DIR, label)} {os.path.join(DIR_20PERCENT, 'labels', label)}")
-print("Copyed")
+copy_image_and_label(IMAGES_20PERCENT, DIR_20PERCENT)
+print("Copied")
 
-## test copy 10P
 print("Copying 10% . . .")
 for image in IMAGES_10PERCENT:
-    os.system(f"cp {os.path.join(IMAGES_DIR, image)} {os.path.join(DIR_10PERCENT, 'images', image)}")
-print("Copyed")
+    image_path = os.path.join(IMAGES_DIR, image)
+    shutil.copy(image_path, os.path.join(DIR_10PERCENT, "images", image))
+print("Copied")
 
-## YAML 파일 생성
 print("Creating YAML file . . .")
 with open(YAML_FILE_NAME, "w") as yaml_file:
     yaml_file.write(YAML_DATA)
